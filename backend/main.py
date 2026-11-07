@@ -62,14 +62,10 @@ def add_special_characters(password, subs_dict):
     return "".join(modified_chars)
 
 
-if __name__ == "__main__":
-    # Example of how main.py (or your Flask route) selects which one the user wants
-    length = 18
-    use_special_chars = True
-
+def create_password(length: int = 8, use_special_chars: bool = False):
     password = generate_random_string(WORD_LIST, length)
 
     if use_special_chars:
         password = add_special_characters(password, SUBSTITUTIONS)
 
-    print("Generated password:", password)
+    return password

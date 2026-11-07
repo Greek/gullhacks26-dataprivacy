@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from generator import create_password
+from main import create_password
 
 app = Flask(__name__)
 
@@ -37,13 +37,15 @@ def generate_endpoint():
     # Generate the password using your generator module
     password = create_password(length=length, use_special_chars=use_special_chars)
 
-    return jsonify({
-        "password": password,
-        "length": len(password),
-        "use_special_chars": use_special_chars
-    })
+    return jsonify(
+        {
+            "password": password,
+            "length": len(password),
+            "use_special_chars": use_special_chars,
+        }
+    )
 
 
 if __name__ == "__main__":
-    # Runs the local development server on http://localhost:5000
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    # Runs the local development server on http://localhost:3001
+    app.run(host="0.0.0.0", port=3001, debug=True)
