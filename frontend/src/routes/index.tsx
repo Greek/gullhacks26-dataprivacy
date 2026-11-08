@@ -1,15 +1,47 @@
 import { Button } from '#/components/ui/button'
 import { Checkbox } from '#/components/ui/checkbox'
 import { Slider } from '#/components/ui/slider'
-import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '#/lib/constants'
+import {
+  API_URL,
+  MAX_PASSWORD_LENGTH,
+  MIN_PASSWORD_LENGTH,
+} from '#/lib/constants'
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export const Route = createFileRoute('/')({ component: Home })
 
+type PasswordResponse = {
+  length: boolean
+  password: string
+  original_password: string
+}
+
 function Home() {
-  const [length, setLength] = useState(12)
+  const [length, setLength] = useState(MIN_PASSWORD_LENGTH)
   const [includeSpecialCharacters, setIncludeSpecialCharacters] = useState(true)
+  const [passwordResult, setPasswordResult] = useState<string>('')
+
+  const createNewPassword = async () => {
+    const response = await fetch(`${API_URL}/api/generate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        length: length,
+        use_special_chars: includeSpecialCharacters,
+      }),
+    })
+    if (response.ok) {
+      const data = (await response.json()) as PasswordResponse
+      setPasswordResult(data.password)
+    }
+  }
+
+  useEffect(() => {
+    createNewPassword()
+  }, [])
 
   return (
     <main className="mx-auto flex min-h-screen max-w-lg items-center justify-center p-6">
@@ -32,11 +64,11 @@ function Home() {
                 className="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-4 text-center font-mono"
                 readOnly
                 type="text"
-                value={'abcd'}
+                value={passwordResult}
               />
             </label>
 
-            <div className="grid grid-cols-[1fr_1fr] gap-3">
+            <div className="grid sm:grid-cols-[1fr_1fr] gap-3">
               <label className="flex min-h-20 items-center gap-2 rounded-xl border border-gray-200 px-4">
                 <Checkbox
                   checked={includeSpecialCharacters}
@@ -69,7 +101,7 @@ function Home() {
 
           <Button
             className="w-full rounded-xl py-6"
-            onClick={() => {}}
+            onClick={() => createNewPassword()}
             type="button"
           >
             Generate password
