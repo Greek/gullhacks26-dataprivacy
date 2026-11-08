@@ -21,21 +21,37 @@ function Home() {
   const [length, setLength] = useState(MIN_PASSWORD_LENGTH)
   const [includeSpecialCharacters, setIncludeSpecialCharacters] = useState(true)
   const [passwordResult, setPasswordResult] = useState<string>('')
+  const [isGenerating, setIsGenerating] = useState(false)
 
   const createNewPassword = async () => {
-    const response = await fetch(`${API_URL}/api/generate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        length: length,
-        use_special_chars: includeSpecialCharacters,
-      }),
-    })
-    if (response.ok) {
-      const data = (await response.json()) as PasswordResponse
-      setPasswordResult(data.password)
+    setIsGenerating(true)
+    setPasswordResult('')
+
+    try {
+      const startedAt = Date.now()
+      const response = await fetch(`${API_URL}/api/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          length: length,
+          use_special_chars: includeSpecialCharacters,
+        }),
+      })
+      let data
+
+      const remainingTime = 350 - (Date.now() - startedAt)
+      if (remainingTime > 0) {
+        await new Promise((resolve) => setTimeout(resolve, remainingTime))
+      }
+
+      if (response.ok) {
+        data = (await response.json()) as PasswordResponse
+        setPasswordResult(data.password)
+      }
+    } finally {
+      setIsGenerating(false)
     }
   }
 
@@ -59,13 +75,33 @@ function Home() {
               <span className="mb-2 block text-sm font-medium">
                 Generated password
               </span>
-              <input
-                aria-label="Generated password"
-                className="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-4 text-center font-mono"
-                readOnly
-                type="text"
-                value={passwordResult}
-              />
+              <div className="relative" aria-busy={isGenerating}>
+                <input
+                  aria-label="Generated password"
+                  className="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-4 text-center font-mono"
+                  readOnly
+                  type="text"
+                  value={passwordResult}
+                />
+                <div
+                  className={`absolute inset-0 flex items-center justify-center rounded-xl border border-gray-200 bg-white/85 backdrop-blur-sm transition-all duration-500 ${
+                    isGenerating
+                      ? 'scale-100 opacity-100'
+                      : 'pointer-events-none scale-[0.98] opacity-0'
+                  }`}
+                  aria-hidden={!isGenerating}
+                  role="status"
+                >
+                  <div className="relative flex items-center gap-3 text-sm font-medium text-gray-600">
+                    <span className="relative size-7">
+                      <span className="absolute inset-0 rounded-full border-2 border-gray-200" />
+                      <span className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-gray-900 border-r-gray-600" />
+                      <span className="absolute inset-[7px] animate-pulse rounded-full bg-gray-800" />
+                    </span>
+                    Generating
+                  </div>
+                </div>
+              </div>
             </label>
 
             <div className="grid sm:grid-cols-[1fr_1fr] gap-3">
@@ -101,6 +137,7 @@ function Home() {
 
           <Button
             className="w-full rounded-xl py-6"
+            disabled={isGenerating}
             onClick={() => createNewPassword()}
             type="button"
           >
