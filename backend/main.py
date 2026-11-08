@@ -11,8 +11,9 @@ with open("english.txt", "r", encoding="utf-8") as file:
 
 def generate_random_string(word_list, length):
     """
-    Generates a random string of words separated by a dash (-),
-    trimmed to a specific target length.
+    Generates a random string of words separated by a random 1-digit number,
+    with the first letter of the first word capitalized. If the next word exceeds
+    the target length, the remaining space is filled with random numbers.
 
     Args:
         word_list (list): List of candidate words to choose from.
@@ -24,20 +25,28 @@ def generate_random_string(word_list, length):
     password = ""
 
     while len(password) < length:
-        # Add a dash between words once the first word is in place
         if password:
-            password += "-"
+            # Prepare a 1-digit number (0-9) plus the next random word
+            next_chunk = str(secrets.randbelow(10)) + secrets.choice(word_list)
+        else:
+            # Capitalize the first letter of the first word only
+            next_chunk = secrets.choice(word_list).capitalize()
 
-        password += secrets.choice(word_list)
+        # Check if adding the next word exceeds the desired length
+        if len(password) + len(next_chunk) > length:
+            # Fill the remaining spots with random digits
+            while len(password) < length:
+                password += str(secrets.randbelow(10))
+        else:
+            password += next_chunk
 
-    # Trim the password to match the exact requested length
-    return password[:length]
+    return password
 
 
 def add_special_characters(password, subs_dict):
     """
     Replaces matching characters in the password using the substitution dictionary
-    while keeping all other characters and dashes intact.
+    while keeping all other characters and numbers intact.
 
     Args:
         password (str): The original password string to modify.
@@ -56,10 +65,10 @@ def add_special_characters(password, subs_dict):
             replacement = secrets.choice(subs_dict[lower_char])
             modified_chars.append(replacement)
         else:
-            # Keep the original letter or dash if it is not in the dictionary
+            # Keep the original letter or number if it is not in the dictionary
             modified_chars.append(char)
 
-    return "".join(modified_chars)
+    return password[0] + "".join(modified_chars[1:])
 
 
 def create_password(length: int = 8, use_special_chars: bool = False):
