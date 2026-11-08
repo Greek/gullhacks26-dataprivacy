@@ -34,11 +34,14 @@ def generate_endpoint():
         use_special_chars = str(raw_special).lower() in ("true", "1", "yes")
 
     # Generate the password using your generator module
-    password = create_password(length=length, use_special_chars=use_special_chars)
+    original_password, password = create_password(
+        length=length, use_special_chars=use_special_chars
+    )
 
     return jsonify(
         {
             "password": password,
+            "original_password": original_password,
             "length": len(password),
             "use_special_chars": use_special_chars,
         }
