@@ -13,15 +13,35 @@ with open(BASE_DIR / "english.txt", "r", encoding="utf-8") as file:
     WORD_LIST = [line.strip() for line in file.read().splitlines() if line.strip()]
 
 
-def generate_random_string(word_list, length):
+def _get_separator_token(separator: str = "number") -> str:
     """
-    Generates a random string of words separated by a random 1-digit number,
-    with each word in Title Case. If the next word exceeds
-    the target length, the remaining space is filled with random numbers.
+    Returns the separator string to place between words:
+    - 'number': Random 1-digit number (0-9)
+    - 'dash' / '-': Hyphen (-)
+    - 'underscore' / '_': Underscore (_)
+    - 'period' / '.': Period (.)
+    """
+    mode = (separator or "number").lower()
+    if mode in ("dash", "-"):
+        return "-"
+    if mode in ("underscore", "_"):
+        return "_"
+    if mode in ("period", "."):
+        return "."
+    return str(secrets.randbelow(10))
+
+
+def generate_random_string(word_list, length, separator: str = "number"):
+    """
+    Generates a random string of words separated by the selected separator
+    (random 1-digit number, '-', '_', or '.'), with each word in Title Case.
+    If the next word exceeds the target length, the remaining space is filled
+    with random numbers.
 
     Args:
         word_list (list): List of candidate words to choose from.
         length (int): The exact desired character length of the generated password.
+        separator (str): Separator mode ('number', 'dash', 'underscore', 'period').
 
     Returns:
         str: A randomly generated base password string of the specified length in Title Case.
@@ -30,8 +50,11 @@ def generate_random_string(word_list, length):
 
     while len(password) < length:
         if password:
-            # Prepare a 1-digit number (0-9) plus the next random word in Title Case
-            next_chunk = str(secrets.randbelow(10)) + secrets.choice(word_list).capitalize()
+            # Prepare the chosen separator plus the next random word in Title Case
+            next_chunk = (
+                _get_separator_token(separator)
+                + secrets.choice(word_list).capitalize()
+            )
         else:
             # Capitalize the first letter of the first word
             next_chunk = secrets.choice(word_list).capitalize()
@@ -77,8 +100,8 @@ def add_special_characters(password, subs_dict):
             # Keep the original letter or number if it is not in the dictionary
             modified_chars.append(char)
 
-    # Guarantee at least one non-alphanumeric special character when requested
-    if not any(not c.isalnum() for c in modified_chars):
+    # Guarantee at least one substituted special symbol when requested
+    if not any(not c.isalnum() and c not in "-_." for c in modified_chars):
         symbol_positions = [
             idx
             for idx in range(1, len(password))
@@ -144,6 +167,7 @@ def create_password(
     length: int = 8,
     use_special_chars: bool = False,
     capitalization: str = "title",
+    separator: str = "number",
 ):
     """
     Generates the final password and its Title Case base phrase for memorization.
@@ -151,7 +175,7 @@ def create_password(
     Returns:
         tuple[str, str]: (generated_password, title_case_memorable_password)
     """
-    title_case_password = generate_random_string(WORD_LIST, length)
+    title_case_password = generate_random_string(WORD_LIST, length, separator)
     cased_password = apply_capitalization(title_case_password, capitalization)
 
     if use_special_chars:
@@ -167,9 +191,10 @@ def create_password_with_analysis(
     length: int = 8,
     use_special_chars: bool = False,
     capitalization: str = "title",
+    separator: str = "number",
 ):
     password, title_case_password = create_password(
-        length, use_special_chars, capitalization
+        length, use_special_chars, capitalization, separator
     )
 
     return {

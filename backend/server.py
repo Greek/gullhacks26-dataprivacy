@@ -18,10 +18,12 @@ def generate_endpoint():
         raw_length = data.get("length", 16)
         raw_special = data.get("use_special_chars", False)
         raw_capitalization = data.get("capitalization", "title")
+        raw_separator = data.get("separator", "number")
     else:
         raw_length = request.args.get("length", default=16)
         raw_special = request.args.get("use_special_chars", default="false")
         raw_capitalization = request.args.get("capitalization", default="title")
+        raw_separator = request.args.get("separator", default="number")
 
     # Safely convert length to an integer and clamp between 4 and 128
     try:
@@ -40,10 +42,24 @@ def generate_endpoint():
     if capitalization not in valid_caps:
         capitalization = "title"
 
+    separator_aliases = {
+        "number": "number",
+        "dash": "dash",
+        "-": "dash",
+        "underscore": "underscore",
+        "_": "underscore",
+        "period": "period",
+        ".": "period",
+    }
+    separator = separator_aliases.get(
+        str(raw_separator or "number").lower(), "number"
+    )
+
     result = create_password_with_analysis(
         length=length,
         use_special_chars=use_special_chars,
         capitalization=capitalization,
+        separator=separator,
     )
     original_password = result["original"]
     password = result["modified"]
@@ -56,6 +72,7 @@ def generate_endpoint():
             "length": len(password),
             "use_special_chars": use_special_chars,
             "capitalization": capitalization,
+            "separator": separator,
             "analysis": analysis,
         }
     )

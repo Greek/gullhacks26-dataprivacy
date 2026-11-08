@@ -26,6 +26,10 @@ function About() {
           <li>
             Capitalization options: Title Case, Random, Lowercase, and Full Case
           </li>
+          <li>
+            Word separator options: random numbers (0–9), dashes (-),
+            underscores (_), and periods (.)
+          </li>
           <li>Real-time password strength evaluation and guidance</li>
           <li>One-click copy to clipboard</li>
           <li>Optional special-character substitutions</li>

@@ -7,12 +7,21 @@ import {
   MIN_PASSWORD_LENGTH,
 } from '#/lib/constants'
 import { createFileRoute } from '@tanstack/react-router'
-import { Check, Copy, ShieldAlert, ShieldCheck, ShieldHalf } from 'lucide-react'
+import {
+  Check,
+  Copy,
+  Info,
+  KeyRound,
+  ShieldAlert,
+  ShieldCheck,
+  ShieldHalf,
+} from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 export const Route = createFileRoute('/')({ component: Home })
 
 type CapitalizationOption = 'title' | 'random' | 'lower' | 'upper'
+type SeparatorOption = 'number' | 'dash' | 'underscore' | 'period'
 
 type PasswordAnalysis = {
   length: number
@@ -27,6 +36,7 @@ type PasswordResponse = {
   password: string
   original_password: string
   capitalization: CapitalizationOption
+  separator: SeparatorOption
   analysis: PasswordAnalysis
 }
 
@@ -40,11 +50,23 @@ const CAPITALIZATION_OPTIONS: {
   { value: 'upper', label: 'Full Case' },
 ]
 
+const SEPARATOR_OPTIONS: {
+  value: SeparatorOption
+  label: string
+  preview: string
+}[] = [
+  { value: 'number', label: 'Number', preview: '0–9' },
+  { value: 'dash', label: 'Dash', preview: '-' },
+  { value: 'underscore', label: 'Underscore', preview: '_' },
+  { value: 'period', label: 'Period', preview: '.' },
+]
+
 function Home() {
   const [length, setLength] = useState(16)
   const [includeSpecialCharacters, setIncludeSpecialCharacters] = useState(true)
   const [capitalization, setCapitalization] =
     useState<CapitalizationOption>('title')
+  const [separator, setSeparator] = useState<SeparatorOption>('number')
   const [passwordResult, setPasswordResult] = useState<string>('')
   const [originalPasswordResult, setOriginalPasswordResult] =
     useState<string>('')
@@ -72,6 +94,7 @@ function Home() {
           length: length,
           use_special_chars: includeSpecialCharacters,
           capitalization: capitalization,
+          separator: separator,
         }),
       })
 
@@ -166,7 +189,7 @@ function Home() {
   })()
 
   return (
-    <main className="mx-auto flex w-full max-w-lg flex-1 items-center justify-center p-6">
+    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center gap-6 p-6">
       <section className="w-full rounded-2xl border border-gray-200 bg-white p-7 shadow-lg">
         <div className="grid grid-rows-[auto_1fr_auto] gap-6">
           <header className="text-center">
@@ -330,6 +353,44 @@ function Home() {
               </div>
             </div>
 
+            <div className="rounded-xl border border-gray-200 p-3.5">
+              <span className="mb-2 block text-sm font-medium">
+                Word separator
+              </span>
+              <div
+                role="radiogroup"
+                aria-label="Word separator"
+                className="grid grid-cols-2 gap-2 sm:grid-cols-4"
+              >
+                {SEPARATOR_OPTIONS.map((option) => {
+                  const isSelected = separator === option.value
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      role="radio"
+                      aria-checked={isSelected}
+                      onClick={() => setSeparator(option.value)}
+                      className={`flex flex-col items-center justify-center gap-0.5 rounded-lg border px-2 py-2 text-xs font-medium transition-colors ${
+                        isSelected
+                          ? 'border-gray-900 bg-gray-900 text-white'
+                          : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      <span>{option.label}</span>
+                      <span
+                        className={`font-mono text-[11px] ${
+                          isSelected ? 'text-gray-300' : 'text-gray-400'
+                        }`}
+                      >
+                        {option.preview}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
             <div className="grid gap-3 sm:grid-cols-[1fr_1fr]">
               <label className="flex min-h-20 items-center gap-2 rounded-xl border border-gray-200 px-4">
                 <Checkbox
@@ -371,6 +432,125 @@ function Home() {
           </Button>
         </div>
       </section>
+
+      <section
+        aria-labelledby="safe-password-recommendations-title"
+        className="w-full rounded-2xl border border-gray-200 bg-white p-7 shadow-lg"
+      >
+        <header>
+          <p className="mb-1 text-sm font-medium uppercase tracking-widest text-gray-500">
+            Security Guide
+          </p>
+          <h2
+            id="safe-password-recommendations-title"
+            className="text-2xl font-bold"
+          >
+            Recommendations for a Safe Password
+          </h2>
+        </header>
+
+        <div className="mt-5 rounded-xl border border-gray-200 bg-gray-50/80 p-4">
+          <h3 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-gray-600">
+            Why Random Phrases Work
+          </h3>
+          <p className="text-sm leading-relaxed text-gray-700">
+            Random phrases with{' '}
+            <span className="font-semibold text-gray-900">
+              no personal connection to yourself
+            </span>{' '}
+            are easy to remember and hard to crack. When you mix in{' '}
+            <span className="font-semibold text-gray-900">
+              random special characters and numbers
+            </span>
+            , attackers cannot rely on word lists—your password must be
+            brute-forced character by character, which is far too slow to crack
+            long passwords.
+          </p>
+        </div>
+
+        <div className="mt-4 grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+          <RecommendationCard
+            title={
+              length >= 16
+                ? '16+ characters (recommended)'
+                : length >= 12
+                  ? '12–15 characters (aim for 16+)'
+                  : 'Under 12 characters (too short)'
+            }
+            tone={length >= 16 ? 'good' : length >= 12 ? 'warn' : 'danger'}
+          >
+            A password under 12 characters can be cracked by brute force easily.
+            Using 16 or more characters makes brute-force cracking drastically
+            harder.
+          </RecommendationCard>
+
+          <RecommendationCard
+            title="Avoid words & personal data"
+            tone="info"
+          >
+            Modern crackers don&apos;t just guess randomly—they try dictionary
+            words, names, birthdays, and personal data first. Stick to unrelated
+            random words.
+          </RecommendationCard>
+
+          <RecommendationCard
+            title="Add symbols & numbers"
+            tone={includeSpecialCharacters ? 'good' : 'warn'}
+          >
+            Substituting special characters (like <kbd>@</kbd>, <kbd>&amp;</kbd>
+            , <kbd>!</kbd>, or <kbd>*</kbd>) and numbers forces attackers into
+            slow brute-force guessing instead of fast dictionary attacks.
+          </RecommendationCard>
+
+          <RecommendationCard title="Unique per account" tone="key">
+            Never reuse passwords across sites. Pair memorable random phrases
+            with a password manager so one breach never compromises your other
+            accounts.
+          </RecommendationCard>
+        </div>
+      </section>
     </main>
+  )
+}
+
+function RecommendationCard({
+  title,
+  tone,
+  children,
+}: {
+  title: string
+  tone: 'good' | 'warn' | 'danger' | 'info' | 'key'
+  children: React.ReactNode
+}) {
+  const badgeStyles = {
+    good: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+    warn: 'border-amber-200 bg-amber-50 text-amber-700',
+    danger: 'border-red-200 bg-red-50 text-red-700',
+    info: 'border-gray-200 bg-gray-100 text-gray-700',
+    key: 'border-gray-200 bg-gray-100 text-gray-700',
+  }[tone]
+
+  const badgeIcon = {
+    good: <Check aria-hidden="true" className="size-3.5" />,
+    warn: <ShieldHalf aria-hidden="true" className="size-3.5" />,
+    danger: <ShieldAlert aria-hidden="true" className="size-3.5" />,
+    info: <Info aria-hidden="true" className="size-3.5" />,
+    key: <KeyRound aria-hidden="true" className="size-3.5" />,
+  }[tone]
+
+  return (
+    <div className="flex flex-col gap-2 rounded-xl border border-gray-200 bg-gray-50/50 p-4">
+      <div className="flex items-center gap-2.5">
+        <span
+          className={`flex size-6 shrink-0 items-center justify-center rounded-full border ${badgeStyles}`}
+        >
+          {badgeIcon}
+        </span>
+        <span className="font-mono text-xs font-semibold text-gray-800">
+          {title}
+        </span>
+      </div>
+      <p className="text-sm leading-relaxed text-gray-600">{children}</p>
+    </div>
   )
 }
