@@ -70,9 +70,27 @@ def add_special_characters(password, subs_dict):
 
     return password[0] + "".join(modified_chars[1:])
 
+def random_capitalization(password):
+    """
+    Randomly capitalizes each letter in the password.
+    Numbers and special characters remain unchanged.
+    """
+    result = []
+    for char in password:
+        if char.isalpha():
+            if secrets.randbelow(2) == 1:
+                result.append(char.upper())
+            else:
+                result.append(char.lower())
+        else:
+            result.append(char)
+    return "".join(result)
 
 def create_password(length: int = 8, use_special_chars: bool = False):
     password = generate_random_string(WORD_LIST, length)
+
+  # NEW: Apply random capitalization
+    password = random_capitalization(password)
 
     if use_special_chars:
         return password, add_special_characters(password, SUBSTITUTIONS)
