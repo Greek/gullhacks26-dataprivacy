@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from main import create_password
+from main import create_password_with_analysis
 
 app = Flask(__name__)
 
@@ -33,10 +33,12 @@ def generate_endpoint():
     else:
         use_special_chars = str(raw_special).lower() in ("true", "1", "yes")
 
-    # Generate the password using your generator module
-    original_password, password = create_password(
+    result = create_password_with_analysis(
         length=length, use_special_chars=use_special_chars
     )
+    original_password = result["original"]
+    password = result["modified"]
+    analysis = result["analysis"]
 
     return jsonify(
         {
@@ -44,6 +46,7 @@ def generate_endpoint():
             "original_password": original_password,
             "length": len(password),
             "use_special_chars": use_special_chars,
+            "analysis": analysis,
         }
     )
 

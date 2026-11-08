@@ -1,5 +1,6 @@
 import json
 import secrets
+from strength import analyze_password
 
 # Load the substitution dictionary and word list directly at startup
 with open("substitutions.json", "r", encoding="utf-8") as file:
@@ -96,3 +97,12 @@ def create_password(length: int = 8, use_special_chars: bool = False):
         return password, add_special_characters(password, SUBSTITUTIONS)
     else:
         return password, password
+
+def create_password_with_analysis(length: int = 8, use_special_chars: bool = False):
+    original, modified = create_password(length, use_special_chars)
+
+    return {
+        "original": original,
+        "modified": modified,
+        "analysis": analyze_password(modified)
+    }
