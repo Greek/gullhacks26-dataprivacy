@@ -1,3 +1,4 @@
+import { ContentCard } from '#/components/content-card'
 import { Button } from '#/components/ui/button'
 import { Checkbox } from '#/components/ui/checkbox'
 import { Slider } from '#/components/ui/slider'
@@ -7,8 +8,15 @@ import {
   MIN_PASSWORD_LENGTH,
 } from '#/lib/constants'
 import { createFileRoute } from '@tanstack/react-router'
-import { Check, Copy, ShieldAlert, ShieldCheck, ShieldHalf } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import {
+  Check,
+  Copy,
+  InfoIcon,
+  ShieldAlert,
+  ShieldCheck,
+  ShieldHalf,
+} from 'lucide-react'
+import { useEffect, useRef, useState, type ReactElement } from 'react'
 
 export const Route = createFileRoute('/')({ component: Home })
 
@@ -166,7 +174,34 @@ function Home() {
   })()
 
   return (
-    <main className="mx-auto flex w-full max-w-lg flex-1 items-center justify-center p-6">
+    <main className="mx-auto flex min-h-screen max-w-5xl items-center justify-center p-2 gap-x-4">
+      <ContentCard subtitle="Secure your privacy" title="Recommended minimums">
+        <div className="grid h-full grid-cols-2 gap-4">
+          <div className="flex h-full flex-col gap-4">
+            <MiniCardItem subtitle="8 characters min." isValid={true}>
+              Each password should be at least 8 characters long, and no more
+              than 64 characters.
+            </MiniCardItem>
+            <MiniCardItem
+              subtitle="Password manager"
+              isValid={false}
+              icon={<InfoIcon size={16} />}
+            >
+              Use a password manager to keep track of all your passwords.
+              Bitwarden is a great manager to use.
+            </MiniCardItem>
+          </div>
+          <div className="flex h-full flex-col gap-4">
+            <MiniCardItem
+              subtitle="Special characters"
+              isValid={includeSpecialCharacters}
+            >
+              Special characters makes your password harder to guess. Replace
+              letters with characters like <kbd>{`$, !`}</kbd>, or <kbd>*</kbd>.
+            </MiniCardItem>
+          </div>
+        </div>
+      </ContentCard>
       <section className="w-full rounded-2xl border border-gray-200 bg-white p-7 shadow-lg">
         <div className="grid grid-rows-[auto_1fr_auto] gap-6">
           <header className="text-center">
@@ -372,5 +407,46 @@ function Home() {
         </div>
       </section>
     </main>
+  )
+}
+
+const MiniCardItem = ({
+  subtitle,
+  isValid,
+  children,
+  icon,
+}: {
+  subtitle: string
+  isValid: boolean
+  children?: React.ReactNode
+  icon?: ReactElement
+}) => {
+  return (
+    <div className="flex flex-col rounded-lg border-neutral-200 bg-neutral-50 border-2 p-3 gap-y-1 text-black">
+      <div className="flex flex-row items-center gap-x-2.5 mb-2">
+        <span
+          aria-label={isValid ? 'Requirement met' : 'Requirement not met'}
+          className={`flex size-5 items-center justify-center rounded-full border-[1.5px]  ${
+            isValid
+              ? 'bg-green-100 text-green-700 border-green-700/40'
+              : 'bg-neutral-100 text-neutral-700'
+          }`}
+          role="img"
+        >
+          {isValid && !icon ? (
+            <Check aria-hidden="true" size={12} />
+          ) : !icon ? (
+            <X aria-hidden="true" size={12} />
+          ) : (
+            <>{icon}</>
+          )}
+        </span>
+
+        <span className="text-neutral-600 font-semibold text-xs font-mono">
+          {subtitle}
+        </span>
+      </div>
+      <p className="text-neutral-700 text-sm text-pretty">{children}</p>
+    </div>
   )
 }
