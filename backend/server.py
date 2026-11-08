@@ -4,8 +4,7 @@ from main import create_password
 
 app = Flask(__name__)
 
-# Enable CORS so your Netlify frontend can fetch from this server
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 
 @app.route("/api/generate", methods=["GET", "POST"])
@@ -35,11 +34,14 @@ def generate_endpoint():
         use_special_chars = str(raw_special).lower() in ("true", "1", "yes")
 
     # Generate the password using your generator module
-    password = create_password(length=length, use_special_chars=use_special_chars)
+    original_password, password = create_password(
+        length=length, use_special_chars=use_special_chars
+    )
 
     return jsonify(
         {
             "password": password,
+            "original_password": original_password,
             "length": len(password),
             "use_special_chars": use_special_chars,
         }

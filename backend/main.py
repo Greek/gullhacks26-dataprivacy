@@ -75,6 +75,6 @@ def create_password(length: int = 8, use_special_chars: bool = False):
     password = generate_random_string(WORD_LIST, length)
 
     if use_special_chars:
-        password = add_special_characters(password, SUBSTITUTIONS)
-
-    return password
+        return password, add_special_characters(password, SUBSTITUTIONS)
+    else:
+        return password, password
