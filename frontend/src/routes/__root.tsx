@@ -12,9 +12,9 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   return (
-    <>
+    <div className="flex min-h-screen flex-col">
       <Navbar />
-      <div className="my-0 mx-auto max-w-7xl">
+      <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col">
         <Outlet />
         <TanStackDevtools
           config={{
@@ -28,6 +28,11 @@ function RootComponent() {
           ]}
         />
       </div>
-    </>
+      <footer className="w-full border-t border-neutral-200 bg-white py-5 text-center">
+        <p className="text-sm font-medium text-neutral-600">
+          Secure &amp; Memorable Password Generator
+        </p>
+      </footer>
+    </div>
   )
 }
