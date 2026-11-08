@@ -8,8 +8,9 @@ import {
   MIN_PASSWORD_LENGTH,
 } from '#/lib/constants'
 import { createFileRoute } from '@tanstack/react-router'
-import { Check, X } from 'lucide-react'
+import { Check, InfoIcon, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import type { ReactElement } from 'react'
 
 export const Route = createFileRoute('/')({ component: Home })
 
@@ -115,7 +116,6 @@ function Home() {
                   <Checkbox
                     checked={includeSpecialCharacters}
                     onCheckedChange={(status) => {
-                      setIsDirty(!!isDirty)
                       setIncludeSpecialCharacters(!!status)
                     }}
                   />
@@ -169,19 +169,23 @@ function Home() {
                 Each password should be at least 8 characters long, and no more
                 than 64 characters.
               </MiniCardItem>
+              <MiniCardItem
+                subtitle="Password manager"
+                isValid={false}
+                icon={<InfoIcon size={16} />}
+              >
+                Use a password manager to keep track of all your passwords.
+                Bitwarden is a great manager to use.
+              </MiniCardItem>
             </div>
             <div className="flex h-full flex-col gap-4">
               <MiniCardItem
-                subtitle="8 characters min."
+                subtitle="Special characters"
                 isValid={includeSpecialCharacters}
               >
-                Special characters make your password harder to guess.{' '}
-                {isMinPassLengthMet && (
-                  <>
-                    Paired with a long password, it can take billions of years
-                    for a password to be cracked!
-                  </>
-                )}
+                Special characters makes your password harder to guess. Replace
+                letters with characters like <kbd>{`$, !`}</kbd>, or{' '}
+                <kbd>*</kbd>.
               </MiniCardItem>
             </div>
           </div>
@@ -195,27 +199,31 @@ const MiniCardItem = ({
   subtitle,
   isValid,
   children,
+  icon,
 }: {
   subtitle: string
   isValid: boolean
   children?: React.ReactNode
+  icon?: ReactElement
 }) => {
   return (
-    <div className="flex flex-col rounded-lg border-neutral-200 bg-neutral-50 border-2 p-3 gap-y-2 text-black">
-      <div className="flex flex-row items-center gap-x-3 mb-2">
+    <div className="flex flex-col rounded-lg border-neutral-200 bg-neutral-50 border-2 p-3 gap-y-1 text-black">
+      <div className="flex flex-row items-center gap-x-2.5 mb-2">
         <span
           aria-label={isValid ? 'Requirement met' : 'Requirement not met'}
-          className={`flex size-5 items-center justify-center rounded-full border-[1.5px] border-black/30 ${
+          className={`flex size-5 items-center justify-center rounded-full border-[1.5px]  ${
             isValid
-              ? 'bg-green-100 text-green-700'
+              ? 'bg-green-100 text-green-700 border-green-700/40'
               : 'bg-neutral-100 text-neutral-700'
           }`}
           role="img"
         >
-          {isValid ? (
+          {isValid && !icon ? (
             <Check aria-hidden="true" size={12} />
-          ) : (
+          ) : !icon ? (
             <X aria-hidden="true" size={12} />
+          ) : (
+            <>{icon}</>
           )}
         </span>
 
@@ -223,7 +231,7 @@ const MiniCardItem = ({
           {subtitle}
         </span>
       </div>
-      <p className="text-neutral-700 text-sm">{children}</p>
+      <p className="text-neutral-700 text-sm text-pretty">{children}</p>
     </div>
   )
 }
