@@ -50,4 +50,4 @@ def generate_endpoint():
 
 if __name__ == "__main__":
     # Runs the local development server on http://localhost:3001
-    app.run(host="0.0.0.0", port=3001, debug=True)
+    app.run(host="0.0.0.0", port=3001)
