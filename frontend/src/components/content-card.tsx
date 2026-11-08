@@ -16,10 +16,10 @@ export const ContentCard = ({
         <p className="mb-1 text-sm font-medium uppercase tracking-widest text-gray-500">
           {subtitle}
         </p>
-        <h1 className="text-3xl font-bold">{title}</h1>
+        <h1 className="text-2xl font-bold">{title}</h1>
       </header>
 
-      <div className="mt-6">{children}</div>
+      <div className="mt-2">{children}</div>
     </section>
   )
 }

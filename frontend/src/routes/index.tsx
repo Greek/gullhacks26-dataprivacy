@@ -1,3 +1,4 @@
+import { ContentCard } from '#/components/content-card'
 import { Button } from '#/components/ui/button'
 import { Checkbox } from '#/components/ui/checkbox'
 import { Slider } from '#/components/ui/slider'
@@ -15,8 +16,9 @@ import {
   ShieldAlert,
   ShieldCheck,
   ShieldHalf,
+  X,
 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactElement } from 'react'
 
 export const Route = createFileRoute('/')({ component: Home })
 
@@ -433,26 +435,16 @@ function Home() {
         </div>
       </section>
 
-      <section
+      <ContentCard
+        title="Recommendations for a Safe Password"
+        subtitle="Security Guide"
         aria-labelledby="safe-password-recommendations-title"
-        className="w-full rounded-2xl border border-gray-200 bg-white p-7 shadow-lg"
       >
-        <header>
-          <p className="mb-1 text-sm font-medium uppercase tracking-widest text-gray-500">
-            Security Guide
-          </p>
-          <h2
-            id="safe-password-recommendations-title"
-            className="text-2xl font-bold"
-          >
-            Recommendations for a Safe Password
-          </h2>
-        </header>
-
-        <div className="mt-5 rounded-xl border border-gray-200 bg-gray-50/80 p-4">
-          <h3 className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-gray-600">
-            Why Random Phrases Work
-          </h3>
+        <MiniCardItem
+          subtitle="Why Random Phrases Work"
+          tone="none"
+          mono={false}
+        >
           <p className="text-sm leading-relaxed text-gray-700">
             Random phrases with{' '}
             <span className="font-semibold text-gray-900">
@@ -466,11 +458,11 @@ function Home() {
             brute-forced character by character, which is far too slow to crack
             long passwords.
           </p>
-        </div>
+        </MiniCardItem>
 
         <div className="mt-4 grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-          <RecommendationCard
-            title={
+          <MiniCardItem
+            subtitle={
               length >= 16
                 ? '16+ characters (recommended)'
                 : length >= 12
@@ -482,75 +474,82 @@ function Home() {
             A password under 12 characters can be cracked by brute force easily.
             Using 16 or more characters makes brute-force cracking drastically
             harder.
-          </RecommendationCard>
+          </MiniCardItem>
 
-          <RecommendationCard
-            title="Avoid words & personal data"
-            tone="info"
-          >
+          <MiniCardItem subtitle="Avoid words & personal data" tone="info">
             Modern crackers don&apos;t just guess randomly—they try dictionary
             words, names, birthdays, and personal data first. Stick to unrelated
             random words.
-          </RecommendationCard>
+          </MiniCardItem>
 
-          <RecommendationCard
-            title="Add symbols & numbers"
+          <MiniCardItem
+            subtitle="Add symbols & numbers"
             tone={includeSpecialCharacters ? 'good' : 'warn'}
           >
             Substituting special characters (like <kbd>@</kbd>, <kbd>&amp;</kbd>
             , <kbd>!</kbd>, or <kbd>*</kbd>) and numbers forces attackers into
             slow brute-force guessing instead of fast dictionary attacks.
-          </RecommendationCard>
+          </MiniCardItem>
 
-          <RecommendationCard title="Unique per account" tone="key">
+          <MiniCardItem subtitle="Unique per account" tone="key">
             Never reuse passwords across sites. Pair memorable random phrases
             with a password manager so one breach never compromises your other
             accounts.
-          </RecommendationCard>
+          </MiniCardItem>
         </div>
-      </section>
+      </ContentCard>
     </main>
   )
 }
 
-function RecommendationCard({
-  title,
-  tone,
+const MiniCardItem = ({
+  subtitle,
   children,
+  mono = true,
+  tone,
 }: {
-  title: string
-  tone: 'good' | 'warn' | 'danger' | 'info' | 'key'
-  children: React.ReactNode
-}) {
-  const badgeStyles = {
-    good: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-    warn: 'border-amber-200 bg-amber-50 text-amber-700',
-    danger: 'border-red-200 bg-red-50 text-red-700',
-    info: 'border-gray-200 bg-gray-100 text-gray-700',
-    key: 'border-gray-200 bg-gray-100 text-gray-700',
-  }[tone]
-
+  subtitle: string
+  children?: React.ReactNode
+  mono?: boolean
+  tone: 'good' | 'warn' | 'danger' | 'info' | 'key' | 'none'
+}) => {
   const badgeIcon = {
     good: <Check aria-hidden="true" className="size-3.5" />,
     warn: <ShieldHalf aria-hidden="true" className="size-3.5" />,
     danger: <ShieldAlert aria-hidden="true" className="size-3.5" />,
     info: <Info aria-hidden="true" className="size-3.5" />,
     key: <KeyRound aria-hidden="true" className="size-3.5" />,
+    none: null,
+  }[tone]
+
+  const badgeStyles = {
+    good: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+    warn: 'border-amber-200 bg-amber-50 text-amber-700',
+    danger: 'border-red-200 bg-red-50 text-red-700',
+    info: 'border-gray-200 bg-gray-100 text-gray-700',
+    key: 'border-gray-200 bg-gray-100 text-gray-700',
+    none: '',
   }[tone]
 
   return (
-    <div className="flex flex-col gap-2 rounded-xl border border-gray-200 bg-gray-50/50 p-4">
-      <div className="flex items-center gap-2.5">
+    <div className="flex flex-col rounded-lg border-neutral-200 bg-neutral-50 border-2 p-3 gap-y-1 text-black">
+      <div className="flex flex-row items-center gap-x-2.5 mb-1.5">
+        {tone !== 'none' && (
+          <span
+            className={`flex size-5 items-center justify-center rounded-full border-[1.5px] ${badgeStyles}`}
+            role="img"
+          >
+            {badgeIcon}
+          </span>
+        )}
+
         <span
-          className={`flex size-6 shrink-0 items-center justify-center rounded-full border ${badgeStyles}`}
+          className={`text-neutral-600 font-semibold text-xs ${mono ? 'font-mono' : 'uppercase tracking-wider'}`}
         >
-          {badgeIcon}
-        </span>
-        <span className="font-mono text-xs font-semibold text-gray-800">
-          {title}
+          {subtitle}
         </span>
       </div>
-      <p className="text-sm leading-relaxed text-gray-600">{children}</p>
+      <p className="text-neutral-700 text-sm text-pretty">{children}</p>
     </div>
   )
 }
