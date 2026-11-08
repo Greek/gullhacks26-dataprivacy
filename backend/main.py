@@ -145,17 +145,22 @@ def create_password(
     use_special_chars: bool = False,
     capitalization: str = "title",
 ):
-    base_password = generate_random_string(WORD_LIST, length)
-    memorable_title_password = base_password.title()
-    cased_password = apply_capitalization(base_password, capitalization)
+    """
+    Generates the final password and its Title Case base phrase for memorization.
+
+    Returns:
+        tuple[str, str]: (generated_password, title_case_memorable_password)
+    """
+    title_case_password = generate_random_string(WORD_LIST, length)
+    cased_password = apply_capitalization(title_case_password, capitalization)
 
     if use_special_chars:
         final_password = add_special_characters(cased_password, SUBSTITUTIONS)
     else:
         final_password = cased_password
 
-    # First return: generated password; Second return: Title Case memorable string
-    return final_password, memorable_title_password
+    # First return: actual password; Second return: Title Case memorable string
+    return final_password, title_case_password
 
 
 def create_password_with_analysis(
@@ -163,10 +168,12 @@ def create_password_with_analysis(
     use_special_chars: bool = False,
     capitalization: str = "title",
 ):
-    modified, original = create_password(length, use_special_chars, capitalization)
+    password, title_case_password = create_password(
+        length, use_special_chars, capitalization
+    )
 
     return {
-        "original": original,
-        "modified": modified,
-        "analysis": analyze_password(modified),
+        "original": title_case_password,
+        "modified": password,
+        "analysis": analyze_password(password),
     }

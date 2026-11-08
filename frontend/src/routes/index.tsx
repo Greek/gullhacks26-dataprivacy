@@ -17,11 +17,9 @@ type CapitalizationOption = 'title' | 'random' | 'lower' | 'upper'
 type PasswordAnalysis = {
   length: number
   score: number
-  max_score: number
-  strength: 'Weak' | 'Medium' | 'Strong'
-  explanation: string
+  max_score?: number
+  strength: 'Weak' | 'Moderate' | 'Strong' | 'Very Strong'
   special_characters: boolean
-  feedback: string[]
 }
 
 type PasswordResponse = {
@@ -126,28 +124,41 @@ function Home() {
   }, [])
 
   const strengthStyles = (() => {
+    const level = analysis?.strength.toLowerCase() ?? ''
     if (!analysis) {
       return {
+        bars: 0,
         badge: 'border-gray-200 bg-gray-100 text-gray-600',
         activeBar: 'bg-gray-400',
         icon: null,
       }
     }
-    if (analysis.strength === 'Strong') {
+    if (level === 'very strong') {
       return {
-        badge: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-        activeBar: 'bg-emerald-500',
+        bars: 4,
+        badge: 'border-green-300 bg-green-100 text-green-800',
+        activeBar: 'bg-green-600',
         icon: <ShieldCheck className="size-3.5" />,
       }
     }
-    if (analysis.strength === 'Medium') {
+    if (level === 'strong') {
       return {
-        badge: 'border-amber-200 bg-amber-50 text-amber-800',
-        activeBar: 'bg-amber-500',
+        bars: 3,
+        badge: 'border-lime-300 bg-lime-50 text-lime-800',
+        activeBar: 'bg-lime-500',
+        icon: <ShieldCheck className="size-3.5" />,
+      }
+    }
+    if (level === 'moderate' || level === 'medium') {
+      return {
+        bars: 2,
+        badge: 'border-yellow-300 bg-yellow-50 text-yellow-800',
+        activeBar: 'bg-yellow-400',
         icon: <ShieldHalf className="size-3.5" />,
       }
     }
     return {
+      bars: 1,
       badge: 'border-red-200 bg-red-50 text-red-700',
       activeBar: 'bg-red-500',
       icon: <ShieldAlert className="size-3.5" />,
@@ -227,13 +238,22 @@ function Home() {
 
               <div className="mt-3 rounded-xl border border-dashed border-gray-300 bg-gray-50/80 px-4 py-3 text-center">
                 <span className="mb-1 block text-xs font-medium uppercase tracking-wider text-gray-500">
-                  How to remember it (Title Case)
+                  How to remember it
                 </span>
                 <p
                   aria-label="Password without special characters"
                   className="min-h-5 font-mono text-sm font-medium text-gray-800 break-all"
                 >
-                  {isGenerating ? '...' : originalPasswordResult || '—'}
+                  {isGenerating
+                    ? '...'
+                    : originalPasswordResult
+                      ? originalPasswordResult.replace(
+                          /[a-zA-Z]+/g,
+                          (word) =>
+                            word.charAt(0).toUpperCase() +
+                            word.slice(1).toLowerCase(),
+                        )
+                      : '—'}
                 </p>
               </div>
 
@@ -254,25 +274,18 @@ function Home() {
                     </span>
                   </div>
 
-                  <div
-                    aria-hidden="true"
-                    className="mb-2 grid grid-cols-3 gap-1.5"
-                  >
-                    {[1, 2, 3].map((step) => (
+                  <div aria-hidden="true" className="grid grid-cols-4 gap-1.5">
+                    {[1, 2, 3, 4].map((step) => (
                       <span
                         key={step}
                         className={`h-1.5 rounded-full transition-colors ${
-                          step <= analysis.score
+                          step <= strengthStyles.bars
                             ? strengthStyles.activeBar
                             : 'bg-gray-200'
                         }`}
                       />
                     ))}
                   </div>
-
-                  <p className="text-xs leading-relaxed text-gray-600">
-                    {analysis.explanation}
-                  </p>
                 </div>
               ) : null}
 
