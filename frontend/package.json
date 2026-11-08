@@ -7,6 +7,8 @@
   },
   "scripts": {
     "dev": "vite dev --port 3000",
+    "dev:backend": "../backend/.venv/bin/python ../backend/server.py",
+    "dev:full": "../backend/.venv/bin/python ../backend/server.py & BACKEND_PID=$!; trap 'kill $BACKEND_PID 2>/dev/null' EXIT INT TERM; vite dev --port 3000",
     "generate-routes": "tsr generate",
     "build": "vite build",
     "preview": "vite preview",

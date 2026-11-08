@@ -1,12 +1,15 @@
 import json
+from pathlib import Path
 import secrets
 from strength import analyze_password
 
+BASE_DIR = Path(__file__).resolve().parent
+
 # Load the substitution dictionary and word list directly at startup
-with open("substitutions.json", "r", encoding="utf-8") as file:
+with open(BASE_DIR / "substitutions.json", "r", encoding="utf-8") as file:
     SUBSTITUTIONS = json.load(file)
 
-with open("english.txt", "r", encoding="utf-8") as file:
+with open(BASE_DIR / "english.txt", "r", encoding="utf-8") as file:
     WORD_LIST = [line.strip() for line in file.read().splitlines() if line.strip()]
 
 
