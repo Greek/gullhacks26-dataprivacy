@@ -22,9 +22,12 @@ function About() {
 
         <ul className="mb-6 list-disc space-y-2 pl-6 text-gray-600">
           <li>Word-based memorable password generation</li>
-          <li>Plain-text base phrase preview to help you remember it</li>
+          <li>Title Case base phrase preview to help you remember words</li>
+          <li>
+            Capitalization options: Title Case, Random, Lowercase, and Full Case
+          </li>
+          <li>Real-time password strength evaluation and guidance</li>
           <li>One-click copy to clipboard</li>
-          <li>Random uppercase and lowercase letters</li>
           <li>Optional special-character substitutions</li>
           <li>Customizable password length</li>
         </ul>

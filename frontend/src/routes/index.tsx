@@ -7,23 +7,50 @@ import {
   MIN_PASSWORD_LENGTH,
 } from '#/lib/constants'
 import { createFileRoute } from '@tanstack/react-router'
-import { Check, Copy } from 'lucide-react'
+import { Check, Copy, ShieldAlert, ShieldCheck, ShieldHalf } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 export const Route = createFileRoute('/')({ component: Home })
+
+type CapitalizationOption = 'title' | 'random' | 'lower' | 'upper'
+
+type PasswordAnalysis = {
+  length: number
+  score: number
+  max_score: number
+  strength: 'Weak' | 'Medium' | 'Strong'
+  explanation: string
+  special_characters: boolean
+  feedback: string[]
+}
 
 type PasswordResponse = {
   length: number
   password: string
   original_password: string
+  capitalization: CapitalizationOption
+  analysis: PasswordAnalysis
 }
 
+const CAPITALIZATION_OPTIONS: {
+  value: CapitalizationOption
+  label: string
+}[] = [
+  { value: 'title', label: 'Title Case' },
+  { value: 'random', label: 'Random' },
+  { value: 'lower', label: 'Lowercase' },
+  { value: 'upper', label: 'Full Case' },
+]
+
 function Home() {
-  const [length, setLength] = useState(MIN_PASSWORD_LENGTH)
+  const [length, setLength] = useState(16)
   const [includeSpecialCharacters, setIncludeSpecialCharacters] = useState(true)
+  const [capitalization, setCapitalization] =
+    useState<CapitalizationOption>('title')
   const [passwordResult, setPasswordResult] = useState<string>('')
   const [originalPasswordResult, setOriginalPasswordResult] =
     useState<string>('')
+  const [analysis, setAnalysis] = useState<PasswordAnalysis | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -46,6 +73,7 @@ function Home() {
         body: JSON.stringify({
           length: length,
           use_special_chars: includeSpecialCharacters,
+          capitalization: capitalization,
         }),
       })
 
@@ -61,6 +89,7 @@ function Home() {
       const data = (await response.json()) as PasswordResponse
       setPasswordResult(data.password)
       setOriginalPasswordResult(data.original_password)
+      setAnalysis(data.analysis)
     } catch {
       setErrorMessage(
         `Could not connect to backend at ${API_URL}. Make sure backend/server.py is running.`,
@@ -95,6 +124,35 @@ function Home() {
       }
     }
   }, [])
+
+  const strengthStyles = (() => {
+    if (!analysis) {
+      return {
+        badge: 'border-gray-200 bg-gray-100 text-gray-600',
+        activeBar: 'bg-gray-400',
+        icon: null,
+      }
+    }
+    if (analysis.strength === 'Strong') {
+      return {
+        badge: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+        activeBar: 'bg-emerald-500',
+        icon: <ShieldCheck className="size-3.5" />,
+      }
+    }
+    if (analysis.strength === 'Medium') {
+      return {
+        badge: 'border-amber-200 bg-amber-50 text-amber-800',
+        activeBar: 'bg-amber-500',
+        icon: <ShieldHalf className="size-3.5" />,
+      }
+    }
+    return {
+      badge: 'border-red-200 bg-red-50 text-red-700',
+      activeBar: 'bg-red-500',
+      icon: <ShieldAlert className="size-3.5" />,
+    }
+  })()
 
   return (
     <main className="mx-auto flex w-full max-w-lg flex-1 items-center justify-center p-6">
@@ -169,7 +227,7 @@ function Home() {
 
               <div className="mt-3 rounded-xl border border-dashed border-gray-300 bg-gray-50/80 px-4 py-3 text-center">
                 <span className="mb-1 block text-xs font-medium uppercase tracking-wider text-gray-500">
-                  How to remember it (no special characters)
+                  How to remember it (Title Case)
                 </span>
                 <p
                   aria-label="Password without special characters"
@@ -179,6 +237,45 @@ function Home() {
                 </p>
               </div>
 
+              {analysis && !isGenerating ? (
+                <div
+                  aria-live="polite"
+                  className="mt-3 rounded-xl border border-gray-200 bg-white px-4 py-3"
+                >
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <span className="text-xs font-medium uppercase tracking-wider text-gray-500">
+                      Password strength
+                    </span>
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold ${strengthStyles.badge}`}
+                    >
+                      {strengthStyles.icon}
+                      {analysis.strength}
+                    </span>
+                  </div>
+
+                  <div
+                    aria-hidden="true"
+                    className="mb-2 grid grid-cols-3 gap-1.5"
+                  >
+                    {[1, 2, 3].map((step) => (
+                      <span
+                        key={step}
+                        className={`h-1.5 rounded-full transition-colors ${
+                          step <= analysis.score
+                            ? strengthStyles.activeBar
+                            : 'bg-gray-200'
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  <p className="text-xs leading-relaxed text-gray-600">
+                    {analysis.explanation}
+                  </p>
+                </div>
+              ) : null}
+
               {errorMessage ? (
                 <p
                   role="alert"
@@ -187,6 +284,37 @@ function Home() {
                   {errorMessage}
                 </p>
               ) : null}
+            </div>
+
+            <div className="rounded-xl border border-gray-200 p-3.5">
+              <span className="mb-2 block text-sm font-medium">
+                Capitalization
+              </span>
+              <div
+                role="radiogroup"
+                aria-label="Capitalization style"
+                className="grid grid-cols-2 gap-2 sm:grid-cols-4"
+              >
+                {CAPITALIZATION_OPTIONS.map((option) => {
+                  const isSelected = capitalization === option.value
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      role="radio"
+                      aria-checked={isSelected}
+                      onClick={() => setCapitalization(option.value)}
+                      className={`rounded-lg border px-2.5 py-2 text-xs font-medium transition-colors ${
+                        isSelected
+                          ? 'border-gray-900 bg-gray-900 text-white'
+                          : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-[1fr_1fr]">

@@ -17,9 +17,11 @@ def generate_endpoint():
         data = request.get_json()
         raw_length = data.get("length", 16)
         raw_special = data.get("use_special_chars", False)
+        raw_capitalization = data.get("capitalization", "title")
     else:
         raw_length = request.args.get("length", default=16)
         raw_special = request.args.get("use_special_chars", default="false")
+        raw_capitalization = request.args.get("capitalization", default="title")
 
     # Safely convert length to an integer and clamp between 4 and 128
     try:
@@ -33,8 +35,15 @@ def generate_endpoint():
     else:
         use_special_chars = str(raw_special).lower() in ("true", "1", "yes")
 
+    valid_caps = {"title", "random", "lower", "upper", "full"}
+    capitalization = str(raw_capitalization or "title").lower()
+    if capitalization not in valid_caps:
+        capitalization = "title"
+
     result = create_password_with_analysis(
-        length=length, use_special_chars=use_special_chars
+        length=length,
+        use_special_chars=use_special_chars,
+        capitalization=capitalization,
     )
     original_password = result["original"]
     password = result["modified"]
@@ -46,6 +55,7 @@ def generate_endpoint():
             "original_password": original_password,
             "length": len(password),
             "use_special_chars": use_special_chars,
+            "capitalization": capitalization,
             "analysis": analysis,
         }
     )
