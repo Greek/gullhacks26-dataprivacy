@@ -10,7 +10,7 @@ export const ContentCard = ({
   return (
     <section
       aria-label="Blank panel"
-      className="grid w-5xl grid-rows-[auto_1fr] rounded-2xl border border-gray-200 bg-white p-7 shadow-lg"
+      className="grid md:aspect-square w-full grid-rows-[auto_1fr] rounded-2xl border border-gray-200 bg-white p-7 shadow-lg"
     >
       <header>
         <p className="mb-1 text-sm font-medium uppercase tracking-widest text-gray-500">

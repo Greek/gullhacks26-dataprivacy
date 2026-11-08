@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 import secrets
+from strength import analyze_password
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -14,8 +15,8 @@ with open(BASE_DIR / "english.txt", "r", encoding="utf-8") as file:
 
 def generate_random_string(word_list, length):
     """
-    Generates a random string of words separated by a -",
-    with the first letter of the first word capitalized. If the next word exceeds
+    Generates a random string of words separated by a random 1-digit number,
+    with each word in Title Case. If the next word exceeds
     the target length, the remaining space is filled with random numbers.
 
     Args:
@@ -29,8 +30,8 @@ def generate_random_string(word_list, length):
 
     while len(password) < length:
         if password:
-            # Prepare a 1-digit number (0-9) plus the next random word
-            next_chunk = "-" + secrets.choice(word_list)
+            # Prepare a 1-digit number (0-9) plus the next random word in Title Case
+            next_chunk = str(secrets.randbelow(10)) + secrets.choice(word_list).capitalize()
         else:
             # Capitalize the first letter of the first word
             next_chunk = secrets.choice(word_list).capitalize()
@@ -104,8 +105,21 @@ def add_special_characters(password, subs_dict):
     return "".join(modified_chars)
 
 
-
-
+def random_capitalization(password):
+    """
+    Randomly capitalizes each letter in the password.
+    Numbers and special characters remain unchanged.
+    """
+    result = []
+    for char in password:
+        if char.isalpha():
+            if secrets.randbelow(2) == 1:
+                result.append(char.upper())
+            else:
+                result.append(char.lower())
+        else:
+            result.append(char)
+    return "".join(result)
 
 
 def apply_capitalization(password: str, capitalization: str = "title") -> str:
@@ -145,41 +159,21 @@ def create_password(
     else:
         final_password = cased_password
 
-def simplify(password, subs_dict):
-    """
-    Simplifies the password by removing any special characters and keeping only
-    letters and numbers.
+    # First return: actual password; Second return: Title Case memorable string
+    return final_password, title_case_password
 
-    Args:
-        password (str): The original password string to simplify.
 
-    Returns:
-        str: The simplified password containing only letters and numbers.
-    """
-    modified_chars = []
-    split_string = password.split('-')
-    
+def create_password_with_analysis(
+    length: int = 8,
+    use_special_chars: bool = False,
+    capitalization: str = "title",
+):
+    password, title_case_password = create_password(
+        length, use_special_chars, capitalization
+    )
 
-    for word in split_string:
-        changed_word = False
-        for char in word:
-                lower_char = char.lower()
-                if not changed_word:
-                    # If the character is in the JSON dictionary, replace it with a random choice
-                    if lower_char in subs_dict and subs_dict[lower_char]:
-                        replacement = secrets.choice(subs_dict[lower_char])
-                        modified_chars.append(replacement)
-                        if replacement == char:
-                            changed_word = False
-                        else:
-                            changed_word = True
-                    else:
-                        # Keep the original letter or number if it is not in the dictionary
-                        modified_chars.append(char)
-                else:
-                    # Keep the original letter or number if it is not in the dictionary
-                    modified_chars.append(char)
-        if word != split_string[-1]:
-            modified_chars.append('-')
-        
-    return "".join(modified_chars)
+    return {
+        "original": title_case_password,
+        "modified": password,
+        "analysis": analyze_password(password),
+    }
