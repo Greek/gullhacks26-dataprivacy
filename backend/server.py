@@ -4,7 +4,7 @@ from main import create_password
 
 app = Flask(__name__)
 
-CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app)
 
 
 @app.route("/api/generate", methods=["GET", "POST"])
