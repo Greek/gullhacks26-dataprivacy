@@ -4,8 +4,7 @@ from main import create_password
 
 app = Flask(__name__)
 
-# Enable CORS so your Netlify frontend can fetch from this server
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+CORS(app, resources={r"/*": {"origins": "26gullhacks.fsck.rip"}})
 
 
 @app.route("/api/generate", methods=["GET", "POST"])

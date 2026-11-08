@@ -1,6 +1,7 @@
 import { Button } from '#/components/ui/button'
 import { Checkbox } from '#/components/ui/checkbox'
 import { Slider } from '#/components/ui/slider'
+import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '#/lib/constants'
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 
@@ -53,14 +54,14 @@ function Home() {
                 <Slider
                   aria-label="Password length"
                   className="w-full"
-                  max={16}
-                  min={4}
+                  min={MIN_PASSWORD_LENGTH}
+                  max={MAX_PASSWORD_LENGTH}
                   onValueChange={(val) => setLength(Number(val))}
                   value={length}
                 />
                 <div className="mt-1 flex justify-between text-xs text-gray-500">
-                  <span>4</span>
-                  <span>16</span>
+                  <span>{MIN_PASSWORD_LENGTH}</span>
+                  <span>{MAX_PASSWORD_LENGTH}</span>
                 </div>
               </label>
             </div>
